@@ -111,23 +111,4 @@ export const productRouter = createTRPCRouter({
             return data;
         }
     ),
-
-    getAllUploadedImages: protectedProcedure.query(async() => {
-      const { data, error } = await supabaseAdmin.storage
-      .from(Bucket.ProductImages)
-      .list('folder', {
-        limit: 100,
-        offset: 0,
-        sortBy: { column: 'name', order: 'asc' },
-      })
-
-      if (error) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: error.message
-        })
-      }
-
-      return data;
-    })
 })

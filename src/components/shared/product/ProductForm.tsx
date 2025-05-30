@@ -32,8 +32,6 @@ interface ProductFormProps {
 export const ProductForm = ({ onSubmit, onChangeImageUrl }: ProductFormProps) => {
   const form = useFormContext<ProductFormSchema>();
   const { data: categories } = api.category.getCategories.useQuery();
-  const { data: uploadedImages } = api.product.getAllUploadedImages.useQuery();
-
   const { mutateAsync: createImageSignedUrl } = api.product.createProductImageUploadSignedUrl.useMutation()
 
   const imageChangeHandler = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -122,7 +120,7 @@ export const ProductForm = ({ onSubmit, onChangeImageUrl }: ProductFormProps) =>
           </FormItem>
         )}
       />
-
+  { JSON.stringify(uploadedImages) }
       {/* upload product image */}
       <div className="space-y">
         <Label>Product Image</Label>
