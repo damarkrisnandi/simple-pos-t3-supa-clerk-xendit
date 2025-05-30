@@ -111,4 +111,21 @@ export const productRouter = createTRPCRouter({
             return data;
         }
     ),
+
+    removeImage: protectedProcedure.input(z.object({
+      imageUrl: z.string().url()
+    })).mutation(async ({ input }) => {
+      const { data, error } = await supabaseAdmin.storage
+        .from(Bucket.ProductImages)
+        .remove([input.imageUrl])
+  
+      if (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error.message
+        })
+      }
+
+      return data;
+    })
 })

@@ -16,7 +16,7 @@ import {
   SelectItem
 } from "@/components/ui/select";
 import { type ProductFormSchema } from "@/forms/product";
-import { getAllUploadedImages, uploadFileToSignedUrl } from "@/lib/supabase-client";
+import { uploadFileToSignedUrl } from "@/lib/supabase-client";
 import { Bucket } from "@/server/bucket";
 import { api } from "@/utils/api";
 import { useState, type ChangeEvent } from "react";

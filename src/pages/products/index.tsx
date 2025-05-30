@@ -32,7 +32,8 @@ import { toast } from "sonner";
 const ProductsPage: NextPageWithLayout = () => {
   const apiUtils = api.useUtils();
   
-  const [uploadedCreateProductImageUrl, setUploadedCreateProductImageUrl] = useState<string | null>(null);
+  const [ uploadedCreateProductImageUrl, setUploadedCreateProductImageUrl ] = useState<string | null>(null);
+  const [ imageToRemove, setImageToRemove ] = useState<string | null>(null);
   const { data: products, isLoading: productsIsLoading } = api.product.getProducts.useQuery();
   const { mutate: createProduct } = api.product.createProduct.useMutation({
     onSuccess: async () => {
@@ -44,6 +45,7 @@ const ProductsPage: NextPageWithLayout = () => {
     }
   })
 
+  const { mutateAsync: removeImage } = api.product.removeImage.useMutation()
   const { mutate: deleteProductById } =
     api.product.deleteProductById.useMutation({
       onSuccess: async () => {
@@ -51,6 +53,10 @@ const ProductsPage: NextPageWithLayout = () => {
 
         toast("Successfully deleted a product");
         setProductToDelete(null);
+
+
+        if (!imageToRemove) return;
+        removeImage({ imageUrl: imageToRemove })
       },
     });
 
@@ -106,9 +112,10 @@ const ProductsPage: NextPageWithLayout = () => {
     });
   };
 
-  const handleClickDeleteProduct = (productId: string) => {
+  const handleClickDeleteProduct = (product: { id: string, imageUrl: string | null }) => {
     
-    setProductToDelete(productId);
+    setProductToDelete(product.id);
+    setImageToRemove(product.imageUrl ?? "");
   };
 
   const handleConfirmDeleteProduct = () => {
@@ -186,7 +193,7 @@ const ProductsPage: NextPageWithLayout = () => {
             image={product.imageUrl ?? ""}
             category={product.category.name}
             onEdit={() => handleClickEditProduct(product)}
-            onDelete={() => handleClickDeleteProduct(product.id)}
+            onDelete={() => handleClickDeleteProduct(product)}
           />
         ))}
       </div>

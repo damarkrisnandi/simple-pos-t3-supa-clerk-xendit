@@ -36,34 +36,20 @@ export const uploadFileToSignedUrl = async ({
   }
 };
 
-export const getAllUploadedImages = async ({
-    // path,
-    // token,
-    bucket,
-  }: {
-    // path: string;
-    // token: string;
-    bucket: Bucket;
-  }) => {
-    try {
-        const { data, error } = await supabaseClient.storage
-          .from(bucket)
-          .list('folder', {
-            limit: 100,
-            offset: 0,
-            sortBy: { column: 'name', order: 'asc' },
-          })
-    
-        if (error) throw error;
-    
-        if (!data) throw new Error("Data is empty!");
-    
-        // const fileUrl = supabaseClient.storage
-        //   .from(bucket)
-        //   .getPublicUrl(data?.path);
-    
-        return data;
-      } catch (error) {
-        throw error;
-      }
-} 
+export const removeFile = async ({
+  path,
+  // token,
+  bucket,
+}: {
+  path: string;
+  // token: string;
+  bucket: Bucket;
+}) => {
+  const { data, error } = await supabaseClient.storage
+    .from(bucket)
+    .remove([path]);
+
+  if (error) throw error;
+
+  return data;
+};
