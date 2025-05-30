@@ -120,7 +120,6 @@ export const ProductForm = ({ onSubmit, onChangeImageUrl }: ProductFormProps) =>
           </FormItem>
         )}
       />
-  { JSON.stringify(uploadedImages) }
       {/* upload product image */}
       <div className="space-y">
         <Label>Product Image</Label>
