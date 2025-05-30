@@ -81,7 +81,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <SidebarHeader className="p-4">
             <h2 className="text-xl font-bold">Simple POS</h2>
           </SidebarHeader>
-          <SidebarContent className="px-4">
+          <SidebarContent className="px-4 overflow-x-hidden">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
