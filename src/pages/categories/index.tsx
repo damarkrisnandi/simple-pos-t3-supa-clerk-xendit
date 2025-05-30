@@ -27,6 +27,7 @@ import { useForm } from "react-hook-form";
 import type { NextPageWithLayout } from "../_app";
 import { api } from "@/utils/api";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 const CategoriesPage: NextPageWithLayout = () => {
   const apiUtils = api.useUtils();
@@ -50,7 +51,7 @@ const CategoriesPage: NextPageWithLayout = () => {
   const { data: categories, isLoading: categoriesIsLoading } =
     api.category.getCategories.useQuery();
 
-  const { mutate: createCategory } = api.category.createCategory.useMutation({
+  const { mutate: createCategory, isPending: isPendingCreateCategory } = api.category.createCategory.useMutation({
     onSuccess: async () => {
       await apiUtils.category.getCategories.invalidate();
 
@@ -70,7 +71,7 @@ const CategoriesPage: NextPageWithLayout = () => {
       },
     });
 
-  const { mutate: editCategory } = api.category.editCategory.useMutation({
+  const { mutate: editCategory, isPending: isPendingEditCategory } = api.category.editCategory.useMutation({
     onSuccess: async () => {
       await apiUtils.category.getCategories.invalidate();
 
@@ -150,10 +151,12 @@ const CategoriesPage: NextPageWithLayout = () => {
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <Button
+                  disabled={isPendingCreateCategory}
                   onClick={createCategoryForm.handleSubmit(
                     handleSubmitCreateCategory,
                   )}
                 >
+                  {isPendingCreateCategory && <Loader2 className="w-3 h-3 animate-spin"/>}
                   Create Category
                 </Button>
               </AlertDialogFooter>
@@ -199,10 +202,14 @@ const CategoriesPage: NextPageWithLayout = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <Button
-              onClick={editCategoryForm.handleSubmit(handleSubmitEditCategory)}
-            >
-              Edit Category
-            </Button>
+                  disabled={isPendingEditCategory}
+                  onClick={editCategoryForm.handleSubmit(
+                    handleSubmitEditCategory,
+                  )}
+                >
+                  {isPendingEditCategory && <Loader2 className="w-3 h-3 animate-spin"/>}
+                  Create Category
+                </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

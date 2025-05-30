@@ -28,6 +28,7 @@ import { productFormSchema, type ProductFormSchema } from "@/forms/product";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 const ProductsPage: NextPageWithLayout = () => {
   const apiUtils = api.useUtils();
@@ -35,7 +36,7 @@ const ProductsPage: NextPageWithLayout = () => {
   const [ uploadedCreateProductImageUrl, setUploadedCreateProductImageUrl ] = useState<string | null>(null);
   const [ imageToRemove, setImageToRemove ] = useState<string | null>(null);
   const { data: products, isLoading: productsIsLoading } = api.product.getProducts.useQuery();
-  const { mutate: createProduct } = api.product.createProduct.useMutation({
+  const { mutate: createProduct, isPending: isPendingCreateProduct } = api.product.createProduct.useMutation({
     onSuccess: async () => {
       await apiUtils.product.getProducts.invalidate();
 
@@ -44,6 +45,17 @@ const ProductsPage: NextPageWithLayout = () => {
       createProductForm.reset();
     }
   })
+
+  const { mutate: editProduct, isPending: isPendingEditProduct } = api.product.editProduct.useMutation({
+    onSuccess: async () => {
+      await apiUtils.category.getCategories.invalidate();
+
+      toast("Successfully edited a category");
+      editProductForm.reset();
+      setProductToEdit(null);
+      setEditProductDialogOpen(false);
+    },
+  });
 
   const { mutateAsync: removeImage } = api.product.removeImage.useMutation()
   const { mutate: deleteProductById } =
@@ -126,16 +138,7 @@ const ProductsPage: NextPageWithLayout = () => {
     });
   };
 
-  const { mutate: editProduct } = api.product.editProduct.useMutation({
-    onSuccess: async () => {
-      await apiUtils.category.getCategories.invalidate();
-
-      toast("Successfully edited a category");
-      editProductForm.reset();
-      setProductToEdit(null);
-      setEditProductDialogOpen(false);
-    },
-  });
+  
 
   return (
     <>
@@ -171,10 +174,12 @@ const ProductsPage: NextPageWithLayout = () => {
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <Button
+                  disabled={isPendingCreateProduct}
                   onClick={createProductForm.handleSubmit(
                     handleSubmitCreateProduct,
                   )}
                 >
+                  {isPendingCreateProduct && <Loader2 className="w-3 h-3 animate-spin" />}
                   Create Product
                 </Button>
               </AlertDialogFooter>
@@ -218,8 +223,10 @@ const ProductsPage: NextPageWithLayout = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <Button
+              disabled={isPendingEditProduct}
               onClick={editProductForm.handleSubmit(handleSubmitEditProduct)}
             >
+              {isPendingEditProduct && <Loader2 className="w-3 h-3 animate-spin" />}
               Edit Product
             </Button>
           </AlertDialogFooter>
