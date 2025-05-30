@@ -32,6 +32,7 @@ import { toast } from "sonner";
 const ProductsPage: NextPageWithLayout = () => {
   const apiUtils = api.useUtils();
   
+  const [uploadedCreateProductImageUrl, setUploadedCreateProductImageUrl] = useState<string | null>(null);
   const { data: products, isLoading: productsIsLoading } = api.product.getProducts.useQuery();
   const { mutate: createProduct } = api.product.createProduct.useMutation({
     onSuccess: async () => {
@@ -70,10 +71,15 @@ const ProductsPage: NextPageWithLayout = () => {
 
 
   const handleSubmitCreateProduct = (data: ProductFormSchema) => {
+    if (!uploadedCreateProductImageUrl) {
+      toast("Please Upload image first");
+      return;
+    }
     createProduct({
       name: data.name,
       price: data.price,
-      categoryId: data.categoryId
+      categoryId: data.categoryId,
+      imageUrl: uploadedCreateProductImageUrl
     });
   };
 
@@ -149,7 +155,9 @@ const ProductsPage: NextPageWithLayout = () => {
               <Form {...createProductForm}>
                 <ProductForm
                   onSubmit={handleSubmitCreateProduct}
-                  submitText="Create Product"
+                  onChangeImageUrl={(imageUrl) => {
+                    setUploadedCreateProductImageUrl(imageUrl)
+                  }}
                 />
               </Form>
 
@@ -194,7 +202,9 @@ const ProductsPage: NextPageWithLayout = () => {
           <Form {...editProductForm}>
             <ProductForm
               onSubmit={handleSubmitEditProduct}
-              submitText="Edit Category"
+              onChangeImageUrl={(imageUrl) => {
+                setUploadedCreateProductImageUrl(imageUrl)
+              }}
             />
           </Form>
 

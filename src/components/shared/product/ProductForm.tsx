@@ -16,18 +16,48 @@ import {
   SelectItem
 } from "@/components/ui/select";
 import { type ProductFormSchema } from "@/forms/product";
+import { getAllUploadedImages, uploadFileToSignedUrl } from "@/lib/supabase-client";
+import { Bucket } from "@/server/bucket";
 import { api } from "@/utils/api";
+import { useState, type ChangeEvent } from "react";
 import { useFormContext } from "react-hook-form";
+import { toast } from "sonner";
 
 interface ProductFormProps {
   onSubmit: (data: ProductFormSchema) => void;
-  submitText: string;
+  onChangeImageUrl: (imageUrl: string) => void
+
 }
 
-export const ProductForm = ({ onSubmit, submitText }: ProductFormProps) => {
+export const ProductForm = ({ onSubmit, onChangeImageUrl }: ProductFormProps) => {
   const form = useFormContext<ProductFormSchema>();
   const { data: categories } = api.category.getCategories.useQuery();
+  const { data: uploadedImages } = api.product.getAllUploadedImages.useQuery();
 
+  const { mutateAsync: createImageSignedUrl } = api.product.createProductImageUploadSignedUrl.useMutation()
+
+  const imageChangeHandler = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+
+    if (files && files.length > 0) {
+      const file = files[0];
+
+      if (!file) return;
+
+      const { path, signedUrl, token } = await createImageSignedUrl();
+
+      const imageUrl = await uploadFileToSignedUrl({
+        bucket: Bucket.ProductImages,
+        file,
+        path,
+        token
+      });
+
+      onChangeImageUrl(imageUrl);
+
+      toast(`Image ${imageUrl} uploaded!`);
+    }
+  };
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
       <FormField
@@ -93,9 +123,10 @@ export const ProductForm = ({ onSubmit, submitText }: ProductFormProps) => {
         )}
       />
 
+      {/* upload product image */}
       <div className="space-y">
         <Label>Product Image</Label>
-        <Input type="file" accept="image/*" />
+        <Input  onChange={imageChangeHandler} type="file" accept="image/*" />
       </div>
     </form>
   );
