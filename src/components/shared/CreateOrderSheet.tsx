@@ -94,13 +94,14 @@ export const CreateOrderSheet = ({
   }, 0);
 
   // const subtotal = 100000;
-  const tax = useMemo(() => subtotal * 0.17, [subtotal]);
+  const tax = useMemo(() => subtotal * 0.1, [subtotal]);
   const grandTotal = useMemo(() => subtotal + tax, [subtotal, tax]);
 
   const { mutate: createOrder, data: createOrderResponse } = api.order.createOrder.useMutation({
     onSuccess: () => {
-      setPaymentDialogOpen(true)
       toast("Order successfully created!")
+
+      setPaymentDialogOpen(true)
     }
   })
 
@@ -197,15 +198,15 @@ export const CreateOrderSheet = ({
                 </Button>
 
                 {!paymentSuccess ? (
-                  <PaymentQRCode qrString={createOrderResponse?.qrString} />
+                  <PaymentQRCode qrString={createOrderResponse?.qrString ?? ""} />
                 ) : (
                   <CheckCircle2 className="size-80 text-green-500" />
                 )}
 
-                <p className="text-3xl font-medium">{toRupiah(grandTotal)}</p>
+                <p className="text-3xl font-medium">{toRupiah(createOrderResponse?.order.grandTotal ?? 0)}</p>
 
                 <p className="text-muted-foreground text-sm">
-                  Transaction ID: 1234567890
+                  Transaction ID: {createOrderResponse?.order.id}
                 </p>
               </>
             )}

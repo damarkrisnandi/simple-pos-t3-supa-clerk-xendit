@@ -42,7 +42,7 @@ model Order {
     subtotal Int
     tax Int
     grandTotal Int
-    externaleTransactionId String?
+    externalTransactionId String?
     paymentMethodId String?
 
     status OrderStatus @default(AWAITING_PAYMENT)

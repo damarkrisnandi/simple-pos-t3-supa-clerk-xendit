@@ -52,8 +52,6 @@ export const orderRouter = createTRPCRouter({
                     (item) => item.productId == product.id
                 )!.quantity;
 
-                const totalPrice = product.price * productQuantity;
-
                 return {
                     orderId: order.id,
                     price: product.price,
@@ -74,17 +72,15 @@ export const orderRouter = createTRPCRouter({
             },
 
             data: {
-                externaleTransactionId: paymentRequest.id,
+                externalTransactionId: paymentRequest.id,
                 paymentMethodId: paymentRequest.paymentMethod.id
             }
         })
-
-        console.log('cek payment', JSON.stringify(paymentRequest));
-
+        
         return {
             order,
             newOrderItems,
-            qrString: paymentRequest.paymentMethod.qrCode?.channelProperties?.qrString,
+            qrString: paymentRequest.paymentMethod.qrCode!.channelProperties!.qrString!,
         }
     })
 })

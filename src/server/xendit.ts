@@ -25,7 +25,8 @@ export const createQRIS = async (params: CreateQRISParams) => {
                     channelProperties: {
                         expiresAt: params.expiresAt ?? addMinutes(new Date(), 15)
                     }
-                }
+                },
+                referenceId: params.orderId,
             }
 
         }
