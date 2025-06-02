@@ -2,7 +2,7 @@ import { Button } from "../ui/button";
 
 import { PRODUCTS } from "@/data/mock";
 import { toRupiah } from "@/utils/toRupiah";
-import { CheckCircle2, Minus, Plus } from "lucide-react";
+import { CheckCircle2, Minus, Plus, ScanLine } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import {
@@ -32,9 +32,12 @@ type OrderItemProps = {
   price: number;
   quantity: number;
   imageUrl: string;
+
+  onAddQuantity: () => void;
+  onSubsQuantity: () => void 
 };
 
-const OrderItem = ({ id, name, price, quantity, imageUrl }: OrderItemProps) => {
+const OrderItem = ({ id, name, price, quantity, imageUrl, onAddQuantity, onSubsQuantity }: OrderItemProps) => {
   return (
     <div className="flex gap-3" key={id}>
       <div className="relative aspect-square h-20 shrink-0 overflow-hidden rounded-xl">
@@ -59,13 +62,13 @@ const OrderItem = ({ id, name, price, quantity, imageUrl }: OrderItemProps) => {
           <p className="font-medium">{toRupiah(quantity * price)}</p>
 
           <div className="flex items-center gap-3">
-            <button className="bg-secondary hover:bg-secondary/80 cursor-pointer rounded-full p-1">
+            <button className="bg-secondary hover:bg-secondary/80 cursor-pointer rounded-full p-1"onClick={onSubsQuantity}>
               <Minus className="h-4 w-4" />
             </button>
 
             <span className="text-sm">{quantity}</span>
 
-            <button className="bg-secondary hover:bg-secondary/80 cursor-pointer rounded-full p-1">
+            <button className="bg-secondary hover:bg-secondary/80 cursor-pointer rounded-full p-1" onClick={onAddQuantity}>
               <Plus className="h-4 w-4" />
             </button>
           </div>
@@ -104,6 +107,30 @@ export const CreateOrderSheet = ({
       setPaymentDialogOpen(true)
     }
   })
+  const { mutate: simulatePayment } = api.order.simulatePayment.useMutation({
+    onSuccess: () => {
+      toast("Simulated payment") 
+    }
+  })
+  const { 
+    mutate: checkOrderPaymentStatus, 
+    data: orderPaid, 
+    isPending: checkOrderPaymentStatusIsPending,
+    reset: resetCheckOrderPaymentStatus
+  } = api.order.checkOrderStatus.useMutation({
+    onSuccess: checkOrderPaymentResponse => {
+      if (checkOrderPaymentResponse) {
+        cartStore.clearCart();
+        toast("Payment Successful!") 
+      }
+    }
+  });
+  
+  const handleClosePaymentDialog = () => {
+    setPaymentDialogOpen(false);
+    onOpenChange(false);
+    resetCheckOrderPaymentStatus()
+  }
 
   const handleCreateOrder = () => {
     // setPaymentDialogOpen(true);
@@ -119,8 +146,19 @@ export const CreateOrderSheet = ({
   };
 
   const handleRefresh = () => {
-    setPaymentSuccess(true);
+    if (!createOrderResponse) return;
+    checkOrderPaymentStatus({
+      orderId: createOrderResponse.order.id
+    })
   };
+
+  const handleSimulatePayment = () => {
+    if (!createOrderResponse) return;
+
+    simulatePayment({
+      orderId: createOrderResponse.order.id
+    });
+  }
 
   return (
     <>
@@ -145,6 +183,14 @@ export const CreateOrderSheet = ({
                     price={item.price}
                     quantity={item.quantity}
                     imageUrl={item.imageUrl}
+                    onAddQuantity={() => {cartStore.addQuantity(item)}}
+                    onSubsQuantity={() => {
+                      cartStore.subsQuantity(item)
+                      // jika item dan qty tinggal 1 maka order sheet akan closed
+                      if (cartStore.items.length === 1 && cartStore.items[0]?.quantity === 1) {
+                        onOpenChange(false);
+                      }
+                    }}
                     />
                   )
                 })
@@ -193,11 +239,14 @@ export const CreateOrderSheet = ({
               </div>
             ) : (
               <>
-                <Button variant="link" onClick={handleRefresh}>
-                  Refresh
+                <Button variant="link" onClick={handleRefresh} disabled={checkOrderPaymentStatusIsPending}>
+                  { checkOrderPaymentStatusIsPending ? 
+                  "Refreshing..." :
+                  "Refresh"  
+                  }
                 </Button>
 
-                {!paymentSuccess ? (
+                {!orderPaid ? (
                   <PaymentQRCode qrString={createOrderResponse?.qrString ?? ""} />
                 ) : (
                   <CheckCircle2 className="size-80 text-green-500" />
@@ -208,20 +257,26 @@ export const CreateOrderSheet = ({
                 <p className="text-muted-foreground text-sm">
                   Transaction ID: {createOrderResponse?.order.id}
                 </p>
+                  {!orderPaid && 
+                  <Button variant={'link'} onClick={() => handleSimulatePayment()}>
+                    <ScanLine className="w-3 h-3"/>
+                    Simulate Payment
+                  </Button>
+                  }
+                
               </>
             )}
           </div>
 
           <AlertDialogFooter>
-            <AlertDialogCancel asChild>
               <Button
                 disabled={paymentInfoLoading}
                 variant="outline"
                 className="w-full"
+                onClick={handleClosePaymentDialog}
               >
                 Done
               </Button>
-            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

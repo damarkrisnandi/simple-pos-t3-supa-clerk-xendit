@@ -17,14 +17,19 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/utils/api";
 import { useCartStore } from "@/store/cart";
 import { toast } from "sonner";
+import { useSearchInput } from "@/hooks/use-search-input";
 
 const DashboardPage: NextPageWithLayout = () => {
   const cartStore = useCartStore()
-  const [searchQuery, setSearchQuery] = useState("");
+  // const [searchQuery, setSearchQuery] = useState("");
+  const { inputValue: searchQuery, setInputValue: setSearchQuery } = useSearchInput({ debounceTime: 300 })
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [orderSheetOpen, setOrderSheetOpen] = useState(false);
 
-  const { data: products } = api.product.getProducts.useQuery()
+  const { data: products } = api.product.getProducts.useQuery({ categoryId: selectedCategory });
+  const { data: categories } = api.category.getCategories.useQuery();
+
+  const totalQuantity = cartStore.items.reduce((a, b) => a + b.quantity, 0)
 
   const handleCategoryClick = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -45,9 +50,9 @@ const DashboardPage: NextPageWithLayout = () => {
   };
 
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter((product) => {
+    return products?.filter((product) => {
       const categoryMatch =
-        selectedCategory === "all" || product.category === selectedCategory;
+        selectedCategory === "all" || product.category.id === selectedCategory;
 
       const searchMatch = product.name
         .toLowerCase()
@@ -55,7 +60,7 @@ const DashboardPage: NextPageWithLayout = () => {
 
       return categoryMatch && searchMatch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [products, selectedCategory, searchQuery]);
 
   return (
     <>
@@ -74,14 +79,16 @@ const DashboardPage: NextPageWithLayout = () => {
               className="animate-in slide-in-from-right"
               onClick={() => setOrderSheetOpen(true)}
             >
-              <ShoppingCart /> Cart
+              <ShoppingCart /> Cart 
+              {cartStore.items.length && 
+                <div className='px-2 py-1 rounded-full text-xs font-medium bg-white text-green-600'>
+                  { totalQuantity } 
+                </div>
+              }
             </Button>
           }
         </div>
       </DashboardHeader>
-      {
-
-      }
 
       <div className="space-y-6">
         <div className="relative">
@@ -95,11 +102,17 @@ const DashboardPage: NextPageWithLayout = () => {
         </div>
 
         <div className="flex space-x-4 overflow-x-auto pb-2">
-          {CATEGORIES.map((category) => (
+          <CategoryFilterCard  
+          name="All"
+          productCount={categories?.length ?? 0}
+          isSelected={false}
+          onClick={() => { handleCategoryClick("all") }}
+          />
+          {categories?.map((category) => (
             <CategoryFilterCard
               key={category.id}
               name={category.name}
-              productCount={category.count}
+              productCount={category._count.products}
               isSelected={selectedCategory === category.id}
               onClick={() => handleCategoryClick(category.id)}
             />
@@ -107,7 +120,7 @@ const DashboardPage: NextPageWithLayout = () => {
         </div>
 
         <div>
-          {filteredProducts.length === 0 ? (
+          {!filteredProducts || filteredProducts.length === 0 ? (
             <div className="my-8 flex flex-col items-center justify-center">
               <p className="text-muted-foreground text-center">
                 No products found
@@ -115,7 +128,7 @@ const DashboardPage: NextPageWithLayout = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {products?.map((product) => (
+              {filteredProducts?.map((product) => (
                 <ProductMenuCard
                   key={product.id}
                   name={product.name}

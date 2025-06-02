@@ -143,9 +143,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <SidebarFooter className="p-4">
             <p className="text-muted-foreground text-xs">Simple POS v1.0</p>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" onClick={toggleTheme}>
+              {/* <Button variant="ghost" onClick={toggleTheme}>
                 {theme === "dark" ? "Dark Mode" : "Light Mode"}
-              </Button>
+              </Button> */}
             </div>
           </SidebarFooter>
         </Sidebar>

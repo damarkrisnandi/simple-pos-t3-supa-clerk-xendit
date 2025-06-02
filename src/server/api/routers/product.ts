@@ -5,9 +5,21 @@ import { supabaseAdmin } from "@/server/supabase-admin";
 import { TRPCError } from "@trpc/server";
 
 export const productRouter = createTRPCRouter({
-    getProducts: protectedProcedure.query(async ({ ctx }) => {
+    getProducts: protectedProcedure
+    .input(z.object({
+      categoryId: z.string()
+    }))
+    .query(async ({ ctx, input }) => {
         const { db } = ctx;
-
+        
+        let where = {}
+        if (input.categoryId !== "all") {
+            where = {
+              category: {
+                id:  input.categoryId 
+              }
+            }
+        }
         const products = await db.product.findMany({
             select: {
                 id: true,
@@ -20,7 +32,8 @@ export const productRouter = createTRPCRouter({
                         name: true
                     }
                 }
-            }
+            },
+            where
         })
 
         return products;

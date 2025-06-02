@@ -8,7 +8,7 @@ export default function Home() {
 
   useEffect(() => {
     if (isSignedIn && isLoaded) {
-      void router.replace("/dashboard");
+      router.replace("/dashboard");
     }
   }, [isSignedIn, isLoaded]);
 

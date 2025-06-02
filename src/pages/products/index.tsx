@@ -35,7 +35,7 @@ const ProductsPage: NextPageWithLayout = () => {
   
   const [ uploadedCreateProductImageUrl, setUploadedCreateProductImageUrl ] = useState<string | null>(null);
   const [ imageToRemove, setImageToRemove ] = useState<string | null>(null);
-  const { data: products, isLoading: productsIsLoading } = api.product.getProducts.useQuery();
+  const { data: products, isLoading: productsIsLoading } = api.product.getProducts.useQuery({categoryId: "all"});
   const { mutate: createProduct, isPending: isPendingCreateProduct } = api.product.createProduct.useMutation({
     onSuccess: async () => {
       await apiUtils.product.getProducts.invalidate();

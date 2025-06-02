@@ -13,6 +13,12 @@ type XenditWebhookBody = {
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     if (req.method !== "POST") return;
+    const headers = req.headers;
+    const webhookToken = headers["x-callback-token"];
+
+    if (webhookToken !== process.env.XENDIT_WEBHOOK_TOKEN) {
+        return res.status(401)
+    }
 
     const body = req.body as XenditWebhookBody;
 
@@ -22,12 +28,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         }
     });
 
+    
+    console.log('check response 1', JSON.stringify(body.data));
+
     if (!order) {
         return res.status(400).send("Order not found")
     }
 
+    console.log('check response 2', JSON.stringify(body.data));
+
+
     if (body.data.status !== "SUCCEEDED") {
-        return res.status(200);
+        return res.status(422);
     }
 
     await db.order.update({
@@ -39,7 +51,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
             status: "PROCESSING",
         }
     })
-    res.status(200);
+    return res.status(200);
 }
 
 export default handler;
