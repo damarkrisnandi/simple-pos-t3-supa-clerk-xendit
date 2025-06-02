@@ -8,7 +8,6 @@ import { CategoryFilterCard } from "@/components/shared/category/CategoryFilterC
 import { CreateOrderSheet } from "@/components/shared/CreateOrderSheet";
 import { ProductMenuCard } from "@/components/shared/product/ProductMenuCard";
 import { Input } from "@/components/ui/input";
-import { CATEGORIES, PRODUCTS } from "@/data/mock";
 import { Search, ShoppingCart } from "lucide-react";
 import type { ReactElement } from "react";
 import { useMemo, useState } from "react";
@@ -17,23 +16,25 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/utils/api";
 import { useCartStore } from "@/store/cart";
 import { toast } from "sonner";
-import { useSearchInput } from "@/hooks/use-search-input";
+
 
 const DashboardPage: NextPageWithLayout = () => {
   const cartStore = useCartStore()
-  // const [searchQuery, setSearchQuery] = useState("");
-  const { inputValue: searchQuery, setInputValue: setSearchQuery } = useSearchInput({ debounceTime: 300 })
+  const [searchQuery, setSearchQuery] = useState("");
+  // pake custom hook aja biar ena
+  // const { inputValue: searchQuery, setInputValue: setSearchQuery } = useSearchInput({ debounceTime: 1000 })
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [orderSheetOpen, setOrderSheetOpen] = useState(false);
 
   const { data: products } = api.product.getProducts.useQuery({ categoryId: selectedCategory });
   const { data: categories } = api.category.getCategories.useQuery();
-
+  const [filteredProducts, setFilteredProducts] = useState<{ id: string, name: string, price: number, imageUrl: string | null, category: { id: string, name: string }}[]>([])
   const totalQuantity = cartStore.items.reduce((a, b) => a + b.quantity, 0)
 
   const handleCategoryClick = (categoryId: string) => {
     setSelectedCategory(categoryId);
   };
+
 
   const handleAddToCart = (productId: string) => {
     const productToAdd = products?.find(product => product.id == productId)
@@ -49,8 +50,8 @@ const DashboardPage: NextPageWithLayout = () => {
     })
   };
 
-  const filteredProducts = useMemo(() => {
-    return products?.filter((product) => {
+  const handleDebouncedSearch = useMemo(() => {
+    const filtered = products?.filter((product) => {
       const categoryMatch =
         selectedCategory === "all" || product.category.id === selectedCategory;
 
@@ -59,7 +60,9 @@ const DashboardPage: NextPageWithLayout = () => {
         .includes(searchQuery.toLowerCase());
 
       return categoryMatch && searchMatch;
-    });
+    }) ?? [];
+    
+    setTimeout(() => setFilteredProducts(filtered), 700)
   }, [products, selectedCategory, searchQuery]);
 
   return (
@@ -97,7 +100,10 @@ const DashboardPage: NextPageWithLayout = () => {
             placeholder="Search products..."
             className="pl-10"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+              handleDebouncedSearch
+            }}
           />
         </div>
 
