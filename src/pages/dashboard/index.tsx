@@ -110,7 +110,7 @@ const DashboardPage: NextPageWithLayout = () => {
         <div className="flex space-x-4 overflow-x-auto pb-2">
           <CategoryFilterCard  
           name="All"
-          productCount={categories?.length ?? 0}
+          productCount={products?.length ?? 0}
           isSelected={false}
           onClick={() => { handleCategoryClick("all") }}
           />
