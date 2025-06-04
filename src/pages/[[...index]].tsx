@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { SignIn, SignInButton, useUser } from "@clerk/nextjs";
+import { RedirectToSignIn, SignIn, SignInButton, SignedOut, useUser } from "@clerk/nextjs";
 import { Lock } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -18,13 +18,15 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-2 h-screen w-screen items-center justify-center">
-      <h1 className="text-2xl font-bold tracking-tight">Welcome to Simple POS</h1>
-      <Button asChild>
-        <div>
-          <Lock />
-          <SignInButton></SignInButton>
-        </div>
-      </Button>
+      <SignedOut>
+        <h1 className="text-2xl font-bold tracking-tight">Welcome to Simple POS</h1>
+        <Button asChild>
+          <div>
+            <Lock />
+            <SignInButton></SignInButton>
+          </div>
+        </Button>
+      </SignedOut>
     </div>
   );
 }
