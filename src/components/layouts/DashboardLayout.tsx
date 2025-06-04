@@ -18,6 +18,7 @@ import Link from "next/link";
 import { useTheme } from "next-themes";
 import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
+import { SignOutButton } from "@clerk/nextjs";
 
 // Dashboard header component
 interface DashboardHeaderProps {
@@ -152,6 +153,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 {theme === "dark" ? "Dark Mode" : "Light Mode"}
               </Button> */}
             </div>
+            <SignOutButton />
           </SidebarFooter>
         </Sidebar>
 
