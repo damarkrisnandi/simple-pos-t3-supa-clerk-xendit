@@ -1,4 +1,5 @@
-import { BarChart3, Grid3X3, Package, ShoppingCart, Sun } from "lucide-react";
+'use client'
+import { BarChart3, Grid3X3, Moon, Package, ShoppingCart, Sun } from "lucide-react";
 import React, { type ReactNode } from "react";
 
 import {
@@ -16,6 +17,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { Button } from "../ui/button";
+import { Switch } from "../ui/switch";
 
 // Dashboard header component
 interface DashboardHeaderProps {
@@ -143,6 +145,9 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <SidebarFooter className="p-4">
             <p className="text-muted-foreground text-xs">Simple POS v1.0</p>
             <div className="flex items-center gap-2">
+              <Sun className="w-3 h-3"/>
+              <Switch  checked={theme === 'dark' || theme === 'system'} onCheckedChange={() => { toggleTheme() }}  />
+              <Moon className="w-3 h-3" />
               {/* <Button variant="ghost" onClick={toggleTheme}>
                 {theme === "dark" ? "Dark Mode" : "Light Mode"}
               </Button> */}
